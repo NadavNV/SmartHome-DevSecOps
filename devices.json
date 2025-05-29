@@ -1,7 +1,7 @@
 {
   "smart_home_devices": [
     {
-      "id": 1,
+      "id": "main-water-heater",
       "type": "water_heater",
       "name": "Main Water Heater",
       "status": "off",
@@ -14,7 +14,7 @@
       }
     },
     {
-      "id": 2,
+      "id": "living-room-light",
       "type": "light",
       "name": "Living Room Light",
       "status": "on",
@@ -25,7 +25,7 @@
       }
     },
     {
-      "id": 3,
+      "id": "bedroom-ac",
       "type": "air_conditioner",
       "name": "Bedroom AC",
       "status": "cooling",
@@ -37,7 +37,7 @@
       }
     },
     {
-      "id": 4,
+      "id": "front-door-lock",
       "type": "door_lock",
       "name": "Front Door Lock",
       "status": "locked",
@@ -47,7 +47,7 @@
       }
     },
     {
-      "id": 5,
+      "id": "living-room-curtains",
       "type": "curtain",
       "name": "Living Room Curtains",
       "status": "closed",
@@ -56,7 +56,7 @@
       }
     },
     {
-      "id": 6,
+      "id": "kitchen-light",
       "type": "light",
       "name": "Kitchen Light",
       "status": "off",

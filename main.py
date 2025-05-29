@@ -14,7 +14,7 @@ def validate_device_data(new_device):
     return True
 
 def check_id(device_id):
-    ids= []
+    ids = []
     for device in data["smart_home_devices"]:
         ids.append(device["id"])
     if device_id in ids:
@@ -32,7 +32,8 @@ def all_devices():
 def add_device():
     new_device = request.json
     if validate_device_data(new_device):
-        new_device["id"] = len(data["smart_home_devices"]) + 1
+        if check_id(new_device["id"]):
+            return jsonify({'error': "ID already exists"}), 400
         data["smart_home_devices"].append(new_device)
 
         return jsonify({'output': "device added successfully"}), 200
@@ -40,7 +41,6 @@ def add_device():
 
 @app.delete("/api/devices/<device_id>")
 def delete_device(device_id):
-    device_id = int(device_id)
     if check_id(device_id):
         for index,device in enumerate(data["smart_home_devices"]):
             if device["id"] == device_id:
@@ -48,6 +48,20 @@ def delete_device(device_id):
         data["smart_home_devices"].pop(index_to_delete)
         return jsonify({"output": "device was deleted from the database"}), 200
     return jsonify({"error": "id not found"}), 400
+
+@app.put("/api/devices/<device_id>")
+def update_device(device_id):
+    updated_device = request.json
+    if device_id != updated_device["id"]:
+        return jsonify({'error': "ID mismatch"}), 400
+    if validate_device_data(updated_device):
+        for i in range(len(data["smart_home_devices"])):
+            if device_id == data["smart_home_devices"][i]["id"]:
+                data["smart_home_devices"][i] = updated_device
+                return jsonify({'output': "Device updated successfully"}), 200
+        return jsonify({'error': "Device not found"}), 400
+    return jsonify({'error': 'Missing required field'}), 400
+
 
 
 
