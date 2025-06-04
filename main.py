@@ -1,11 +1,12 @@
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+#from flask_cors import CORS
 import json
 file_name = r"./devices.json"
 
 with open(file_name, mode="r", encoding="utf-8") as read_file:
     data = json.load(read_file)
 
+#Validates that the request data contains all the required fields
 def validate_device_data(new_device):
     required_fields = ['id', 'type', 'name', 'status', 'parameters']
     for field in required_fields:
@@ -13,21 +14,22 @@ def validate_device_data(new_device):
             return False
     return True
 
+#Checks the validity of the device id
 def check_id(device_id):
-    ids = []
     for device in data["smart_home_devices"]:
-        ids.append(device["id"])
-    if device_id in ids:
-        return True
+        if device_id ==  device["id"]:
+            return True
     return False
 
 
 app = Flask(__name__)
 
+#Presents a list of all your devices and their configuration
 @app.get("/api/devices")
 def all_devices():
     return data
 
+#adds a new device
 @app.post("/api/devices")
 def add_device():
     new_device = request.json
@@ -39,6 +41,7 @@ def add_device():
         return jsonify({'output': "device added successfully"}), 200
     return jsonify({'error': 'Missing required field'}), 400
 
+#delets a device from the device list
 @app.delete("/api/devices/<device_id>")
 def delete_device(device_id):
     if check_id(device_id):
@@ -47,8 +50,9 @@ def delete_device(device_id):
                 index_to_delete = index
         data["smart_home_devices"].pop(index_to_delete)
         return jsonify({"output": "device was deleted from the database"}), 200
-    return jsonify({"error": "id not found"}), 400
+    return jsonify({"error": "id not found"}), 404
 
+#Changes a device configuration or adds a new configuration
 @app.put("/api/devices/<device_id>")
 def update_device(device_id):
     updated_device = request.json
@@ -59,8 +63,32 @@ def update_device(device_id):
             if device_id == data["smart_home_devices"][i]["id"]:
                 data["smart_home_devices"][i] = updated_device
                 return jsonify({'output': "Device updated successfully"}), 200
-        return jsonify({'error': "Device not found"}), 400
+        return jsonify({'error': "Device not found"}), 404
     return jsonify({'error': 'Missing required field'}), 400
+
+#Sends a real time action to one of the devices
+@app.post("/api/devices/<device_id>/action")
+def rt_action(device_id):
+    action = request.json
+    for device in data["smart_home_devices"]:
+        if device["id"] == device_id:
+            for key in action:
+                if key == "parameters":
+                    if isinstance(action["parameters"], dict):
+                        for param_key, param_value in action["parameters"].items():
+                            if param_key in device["parameters"]:
+                                device["parameters"][param_key] = param_value
+                            else:
+                                return jsonify({'error': f"Invalid parameter: '{param_key}'"}), 400
+                    else:
+                        return jsonify({'error': "'parameters' must be a dictionary"}), 400
+                elif key != "id":
+                    if key in device:
+                        device[key] = action[key]
+                    else:
+                        return jsonify({'error': f"Invalid field: '{key}'"}), 400
+            return jsonify({'output': "Action applied to device"}), 200
+    return jsonify({'error': "Device not found"}), 404
 
 
 
