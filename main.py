@@ -100,6 +100,10 @@ def rt_action(device_id):
 
 @app.after_request
 def add_header(response):
+    if request.method == 'OPTIONS':
+        response.headers['Allow'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'HEAD, DELETE, POST, GET, OPTIONS, PUT, PATCH'
+    response.headers['Access-Control-Allow-Headers'] = '*'
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
