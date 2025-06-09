@@ -1,5 +1,4 @@
-{
-  "smart_home_devices": [
+[
     {
       "id": "main-water-heater",
       "type": "water_heater",
@@ -20,15 +19,16 @@
       "status": "on",
       "parameters": {
         "brightness": 80,
-        "color": "warm_white",
-        "is_dimmable": true
+        "color": "#FFFFFF",
+        "is_dimmable": false,
+        "dynamic_color": true
       }
     },
     {
       "id": "bedroom-ac",
       "type": "air_conditioner",
       "name": "Bedroom AC",
-      "status": "cooling",
+      "status": "on",
       "parameters": {
         "temperature": 22,
         "mode": "cool",
@@ -62,9 +62,9 @@
       "status": "off",
       "parameters": {
         "brightness": 80,
-        "color": "warm_yellow",
-        "is_dimmable": true
+        "color": "#FFDF8E",
+        "is_dimmable": true,
+        "dynamic_color": false
       }
     }
-  ]
-}
+]
