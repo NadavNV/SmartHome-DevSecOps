@@ -98,6 +98,12 @@ def rt_action(device_id):
     return jsonify({'error': "Device not found"}), 404
 
 
+@app.after_request
+def add_header(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
+
+
 # GET /api/devices: Get a list of all smart devices with their status.
 # POST /api/devices: Register a new smart device (requires device_id, type, and location in payload).
 # PUT /api/devices/<device_id>: Update a device's configuration or status (e.g., turn on/off).
