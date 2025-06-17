@@ -1,11 +1,61 @@
 from flask import Flask, jsonify, request
 import json
+import paho.mqtt.client as mqtt
+import json as jsonlib
+import threading
+import time
+
+broker = "test.mosquitto.org"
+mqtt_client = mqtt.Client("FlaskDevicePublisher")
+mqtt_client.connect(broker)
 
 file_name = r"./devices.json"
 
 with open(file_name, mode="r", encoding="utf-8") as read_file:
     data = json.load(read_file)
 
+def print_device_action(device_name, action_payload, prefix=""):
+    for key, value in action_payload.items():
+        if isinstance(value, dict):
+            # Special case: skip printing "parameters" as a word in output
+            if key == "parameters":
+                print_device_action(device_name, value, prefix=prefix)
+            else:
+                print_device_action(device_name, value, prefix=f"{prefix}{key} ")
+        else:
+            print(f"{device_name} {prefix}{key} changed to {value}")
+
+def on_message(client, userdata, msg):
+    print(f"\n📡 MQTT Message Received on {msg.topic}")
+    try:
+        payload = jsonlib.loads(msg.payload.decode())
+        print(f"➡ Full Action Payload: {payload}")
+
+        # Extract device_id from topic: expected format project/home/<room>/<device_id>/action
+        topic_parts = msg.topic.split('/')
+        if len(topic_parts) >= 5:
+            device_id = topic_parts[3]
+            # Find device name by device_id
+            device_name = next((d['name'] for d in data if d['id'] == device_id), device_id)
+        else:
+            device_name = "Unknown device"
+
+        print_device_action(device_name, payload)
+
+    except Exception as e:
+        print(f"❌ Error decoding payload: {e}")
+
+
+def mqtt_subscriber_thread():
+    print("MQTT subscriber thread started", flush=True)
+    sub_client = mqtt.Client()
+    sub_client.on_message = on_message
+    sub_client.connect("test.mosquitto.org")
+    sub_client.subscribe("project/home/#")
+    sub_client.loop_forever()
+
+# Start subscriber in background
+threading.Thread(target=mqtt_subscriber_thread, daemon=True).start()
 
 # Validates that the request data contains all the required fields
 def validate_device_data(new_device):
@@ -109,7 +159,13 @@ def rt_action(device_id):
                         device[key] = action[key]
                     else:
                         return jsonify({'error': f"Invalid field: '{key}'"}), 400
-            return jsonify({'output': "Action applied to device"}), 200
+
+            room_topic = device['room'].lower().replace(" ", "-")
+            topic = f"project/home/{room_topic}/{device['id']}/action"
+            payload = jsonlib.dumps(action)
+            mqtt_client.publish(topic, payload)
+
+            return jsonify({'output': "Action applied to device and published via MQTT"}), 200
     return jsonify({'error': "Device not found"}), 404
 
 
@@ -134,4 +190,4 @@ def add_header(response):
 # GET /api/devices/analytics: Fetch usage patterns and status trends for devices.
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5200, debug=True)
+    app.run(host='0.0.0.0', port=5200, debug=True, use_reloader=False)
