@@ -9,7 +9,7 @@ with open(file_name, mode="r", encoding="utf-8") as read_file:
 
 # Validates that the request data contains all the required fields
 def validate_device_data(new_device):
-    required_fields = ['id', 'type', 'name', 'status', 'parameters']
+    required_fields = ['id', 'type', 'room', 'name', 'status', 'parameters']
     for field in required_fields:
         if field not in new_device:
             return False
@@ -27,10 +27,25 @@ def check_id(device_id):
 app = Flask(__name__)
 
 
+# Returns a list of device IDs
+@app.get("/api/ids")
+def device_ids():
+    return [device["id"] for device in data]
+
+
 # Presents a list of all your devices and their configuration
 @app.get("/api/devices")
 def all_devices():
     return data
+
+
+# Get data on a specific device by its ID
+@app.get("/api/devices/<device_id>")
+def get_device(device_id):
+    for device in data:
+        if device_id == device["id"]:
+            return device
+    return jsonify({'error': "ID not found"}), 400
 
 
 # Adds a new device
@@ -98,6 +113,7 @@ def rt_action(device_id):
     return jsonify({'error': "Device not found"}), 404
 
 
+# Adds required headers to the response
 @app.after_request
 def add_header(response):
     if request.method == 'OPTIONS':

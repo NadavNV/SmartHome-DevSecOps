@@ -3,6 +3,7 @@
       "id": "main-water-heater",
       "type": "water_heater",
       "name": "Main Water Heater",
+      "room": "Main Bath",
       "status": "off",
       "parameters": {
         "temperature": 40,
@@ -16,6 +17,7 @@
       "id": "living-room-light",
       "type": "light",
       "name": "Living Room Light",
+      "room": "Living Room",
       "status": "on",
       "parameters": {
         "brightness": 80,
@@ -28,6 +30,7 @@
       "id": "bedroom-ac",
       "type": "air_conditioner",
       "name": "Bedroom AC",
+      "room": "Bedroom",
       "status": "on",
       "parameters": {
         "temperature": 22,
@@ -39,6 +42,7 @@
     {
       "id": "front-door-lock",
       "type": "door_lock",
+      "room": "General",
       "name": "Front Door Lock",
       "status": "locked",
       "parameters": {
@@ -49,6 +53,7 @@
     {
       "id": "living-room-curtains",
       "type": "curtain",
+      "room": "Living Room",
       "name": "Living Room Curtains",
       "status": "closed",
       "parameters": {
@@ -58,6 +63,7 @@
     {
       "id": "kitchen-light",
       "type": "light",
+      "room": "Kitchen",
       "name": "Kitchen Light",
       "status": "off",
       "parameters": {
