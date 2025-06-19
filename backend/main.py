@@ -9,7 +9,7 @@ broker = "test.mosquitto.org"
 mqtt_client = mqtt.Client("FlaskDevicePublisher")
 mqtt_client.connect(broker)
 
-file_name = r"./devices.json"
+file_name = "devices.json"
 
 with open(file_name, mode="r", encoding="utf-8") as read_file:
     data = json.load(read_file)
