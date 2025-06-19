@@ -5,15 +5,18 @@ import json as jsonlib
 import threading
 import time
 
+# Setting up the MQTT client
 broker = "test.mosquitto.org"
 mqtt_client = mqtt.Client("FlaskDevicePublisher")
 mqtt_client.connect(broker)
 
+# Temporary local json -> stand in for a future database
 file_name = r"./devices.json"
 
 with open(file_name, mode="r", encoding="utf-8") as read_file:
     data = json.load(read_file)
 
+# Prints out an output of the received mqtt messages
 def print_device_action(device_name, action_payload, prefix=""):
     for key, value in action_payload.items():
         if isinstance(value, dict):
@@ -25,11 +28,12 @@ def print_device_action(device_name, action_payload, prefix=""):
         else:
             print(f"{device_name} {prefix}{key} changed to {value}")
 
+# Receives the published mqtt payloads -> the mqtt subscriber
 def on_message(client, userdata, msg):
     print(f"\n📡 MQTT Message Received on {msg.topic}")
     try:
         payload = jsonlib.loads(msg.payload.decode())
-        print(f"➡ Full Action Payload: {payload}")
+        #print(f"Full Action Payload: {payload}")
 
         # Extract device_id from topic: expected format project/home/<room>/<device_id>/action
         topic_parts = msg.topic.split('/')
@@ -43,9 +47,9 @@ def on_message(client, userdata, msg):
         print_device_action(device_name, payload)
 
     except Exception as e:
-        print(f"❌ Error decoding payload: {e}")
+        print(f"Error decoding payload: {e}")
 
-
+# Launches the mqtt subscriber in an infinite loop on a different thread
 def mqtt_subscriber_thread():
     print("MQTT subscriber thread started", flush=True)
     sub_client = mqtt.Client()
@@ -154,12 +158,13 @@ def rt_action(device_id):
                                 return jsonify({'error': f"Invalid parameter: '{param_key}'"}), 400
                     else:
                         return jsonify({'error': "'parameters' must be a dictionary"}), 400
-                elif key != "id":
+                elif key != "id" and "type" and "room" and "name":
                     if key in device:
                         device[key] = action[key]
                     else:
                         return jsonify({'error': f"Invalid field: '{key}'"}), 400
 
+            # Formats and publishes the mqtt topic and payload -> the mqtt publisher
             room_topic = device['room'].lower().replace(" ", "-")
             topic = f"project/home/{room_topic}/{device['id']}/action"
             payload = jsonlib.dumps(action)
