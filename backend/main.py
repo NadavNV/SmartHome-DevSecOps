@@ -27,8 +27,7 @@ def print_device_action(device_name, action_payload, prefix=""):
             else:
                 print_device_action(device_name, value, prefix=f"{prefix}{key} ")
         else:
-            app.logger.info(f"{device_name} {prefix}{key} changed to {value}")
-            # print(f"{device_name} {prefix}{key} changed to {value}")
+            app.logger.info(f"{device_name} {prefix}{key} set to {value}")
 
 
 # Launches the mqtt subscriber in an infinite loop on a different thread
@@ -70,7 +69,7 @@ app.config['MQTT_PASSWORD'] = ''  # set the password here if the broker demands 
 app.config['MQTT_KEEPALIVE'] = 5  # set the time interval for sending a ping to the broker to 5 seconds
 app.config['MQTT_TLS_ENABLED'] = False  # set TLS to disabled for testing purposes
 
-mqtt = Mqtt()
+mqtt = Mqtt(app)
 
 
 # Function to run after the MQTT client finishes connecting to the broker
@@ -93,7 +92,7 @@ def on_message(client, userdata, msg):
         if len(topic_parts) >= 5:
             device_id = topic_parts[3]
             # Find device name by device_id
-            device_name = next((d['name'] for d in data if d['id'] == device_id), device_id)
+            device_name = [d['name'] for d in data if d['id'] == device_id][0]
         else:
             device_name = "Unknown device"
 
