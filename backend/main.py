@@ -190,7 +190,7 @@ def rt_action(device_id):
             room_topic = device['room'].lower().replace(" ", "-")
             topic = f"project/home/{room_topic}/{device['id']}/action"
             payload = json.dumps(action)
-            mqtt.publish(topic, payload.encode())
+            mqtt.publish(topic, payload.encode(), qos=2)
 
             return jsonify({'output': "Action applied to device and published via MQTT"}), 200
     return jsonify({'error': "Device not found"}), 404
