@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dc35ef9c-e928-47c6-b8ab-8651ffc1f7af" name="Changes" comment="Added room field to devices, added getting device by id">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/requirements.txt" afterDir="false" />
-    </list>
+    <list default="true" id="dc35ef9c-e928-47c6-b8ab-8651ffc1f7af" name="Changes" comment="Replaced paho with Flask-MQTT" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -65,10 +60,20 @@
       <option name="presentableId" value="Default" />
       <updated>1747807601426</updated>
     </task>
+    <task id="LOCAL-00001" summary="Replaced paho with Flask-MQTT">
+      <option name="closed" value="true" />
+      <created>1750444481749</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1750444481749</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Added room field to devices, added getting device by id" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added room field to devices, added getting device by id" />
+    <MESSAGE value="Replaced paho with Flask-MQTT" />
+    <option name="LAST_COMMIT_MESSAGE" value="Replaced paho with Flask-MQTT" />
   </component>
 </project>

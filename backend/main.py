@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_mqtt import Mqtt
 import json
+
 # import paho.mqtt.client as mqtt
 # import threading
 
@@ -28,30 +29,6 @@ def print_device_action(device_name, action_payload, prefix=""):
         else:
             app.logger.info(f"{device_name} {prefix}{key} changed to {value}")
             # print(f"{device_name} {prefix}{key} changed to {value}")
-
-
-# Receives the published mqtt payloads -> the mqtt subscriber
-def on_message(client, userdata, msg):
-    app.logger.info(f"MQTT Message Received on {msg.topic}")
-    # print(f"\n📡 MQTT Message Received on {msg.topic}")
-    try:
-        payload = json.loads(msg.payload.decode())
-        # print(f"Full Action Payload: {payload}")
-
-        # Extract device_id from topic: expected format project/home/<room>/<device_id>/action
-        topic_parts = msg.topic.split('/')
-        if len(topic_parts) >= 5:
-            device_id = topic_parts[3]
-            # Find device name by device_id
-            device_name = next((d['name'] for d in data if d['id'] == device_id), device_id)
-        else:
-            device_name = "Unknown device"
-
-        print_device_action(device_name, payload)
-
-    except Exception as e:
-        app.logger.exception("Error decoding payload")
-        # print(f"Error decoding payload: {e}")
 
 
 # Launches the mqtt subscriber in an infinite loop on a different thread
@@ -85,11 +62,6 @@ def check_id(device_id):
     return False
 
 
-# Function to run after the MQTT client finishes connecting to the broker
-def on_connect(client, userdata, flags, rc):
-    client.subscribe("project/home/#")
-
-
 app = Flask(__name__)
 app.config['MQTT_BROKER_URL'] = BROKER_URL
 app.config['MQTT_BROKER_PORT'] = 1883  # MQTT, unencrypted, unauthenticated
@@ -99,7 +71,37 @@ app.config['MQTT_KEEPALIVE'] = 5  # set the time interval for sending a ping to 
 app.config['MQTT_TLS_ENABLED'] = False  # set TLS to disabled for testing purposes
 
 mqtt = Mqtt()
-mqtt.on_connect = on_connect
+
+
+# Function to run after the MQTT client finishes connecting to the broker
+@mqtt.on_connect()
+def on_connect(client, userdata, flags, rc):
+    client.subscribe("project/home/#")
+
+
+# Receives the published mqtt payloads -> the mqtt subscriber
+@mqtt.on_message()
+def on_message(client, userdata, msg):
+    app.logger.info(f"MQTT Message Received on {msg.topic}")
+    # print(f"\n📡 MQTT Message Received on {msg.topic}")
+    try:
+        payload = json.loads(msg.payload.decode())
+        # print(f"Full Action Payload: {payload}")
+
+        # Extract device_id from topic: expected format project/home/<room>/<device_id>/action
+        topic_parts = msg.topic.split('/')
+        if len(topic_parts) >= 5:
+            device_id = topic_parts[3]
+            # Find device name by device_id
+            device_name = next((d['name'] for d in data if d['id'] == device_id), device_id)
+        else:
+            device_name = "Unknown device"
+
+        print_device_action(device_name, payload)
+
+    except Exception as e:
+        app.logger.exception("Error decoding payload")
+        # print(f"Error decoding payload: {e}")
 
 
 # Returns a list of device IDs
