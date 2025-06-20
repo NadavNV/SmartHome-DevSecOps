@@ -1,20 +1,20 @@
 from flask import Flask, jsonify, request
+from flask_mqtt import Mqtt
 import json
-import paho.mqtt.client as mqtt
-import json as jsonlib
-import threading
-import time
+# import paho.mqtt.client as mqtt
+# import threading
 
 # Setting up the MQTT client
-broker = "test.mosquitto.org"
-mqtt_client = mqtt.Client("FlaskDevicePublisher")
-mqtt_client.connect(broker)
+BROKER_URL = "test.mosquitto.org"
+# mqtt_client = mqtt.Client("FlaskDevicePublisher")
+# mqtt_client.connect(broker)
 
 # Temporary local json -> stand in for a future database
 file_name = r"./devices.json"
 
 with open(file_name, mode="r", encoding="utf-8") as read_file:
     data = json.load(read_file)
+
 
 # Prints out an output of the received mqtt messages
 def print_device_action(device_name, action_payload, prefix=""):
@@ -26,14 +26,17 @@ def print_device_action(device_name, action_payload, prefix=""):
             else:
                 print_device_action(device_name, value, prefix=f"{prefix}{key} ")
         else:
-            print(f"{device_name} {prefix}{key} changed to {value}")
+            app.logger.info(f"{device_name} {prefix}{key} changed to {value}")
+            # print(f"{device_name} {prefix}{key} changed to {value}")
+
 
 # Receives the published mqtt payloads -> the mqtt subscriber
 def on_message(client, userdata, msg):
-    print(f"\n📡 MQTT Message Received on {msg.topic}")
+    app.logger.info(f"MQTT Message Received on {msg.topic}")
+    # print(f"\n📡 MQTT Message Received on {msg.topic}")
     try:
-        payload = jsonlib.loads(msg.payload.decode())
-        #print(f"Full Action Payload: {payload}")
+        payload = json.loads(msg.payload.decode())
+        # print(f"Full Action Payload: {payload}")
 
         # Extract device_id from topic: expected format project/home/<room>/<device_id>/action
         topic_parts = msg.topic.split('/')
@@ -47,19 +50,23 @@ def on_message(client, userdata, msg):
         print_device_action(device_name, payload)
 
     except Exception as e:
-        print(f"Error decoding payload: {e}")
+        app.logger.exception("Error decoding payload")
+        # print(f"Error decoding payload: {e}")
+
 
 # Launches the mqtt subscriber in an infinite loop on a different thread
-def mqtt_subscriber_thread():
-    print("MQTT subscriber thread started", flush=True)
-    sub_client = mqtt.Client()
-    sub_client.on_message = on_message
-    sub_client.connect("test.mosquitto.org")
-    sub_client.subscribe("project/home/#")
-    sub_client.loop_forever()
+# def mqtt_subscriber_thread():
+#     print("MQTT subscriber thread started", flush=True)
+#     sub_client = mqtt.Client()
+#     sub_client.on_message = on_message
+#     sub_client.connect("test.mosquitto.org")
+#     sub_client.subscribe("project/home/#")
+#     sub_client.loop_forever()
+
 
 # Start subscriber in background
-threading.Thread(target=mqtt_subscriber_thread, daemon=True).start()
+# threading.Thread(target=mqtt_subscriber_thread, daemon=True).start()
+
 
 # Validates that the request data contains all the required fields
 def validate_device_data(new_device):
@@ -78,7 +85,21 @@ def check_id(device_id):
     return False
 
 
+# Function to run after the MQTT client finishes connecting to the broker
+def on_connect(client, userdata, flags, rc):
+    client.subscribe("project/home/#")
+
+
 app = Flask(__name__)
+app.config['MQTT_BROKER_URL'] = BROKER_URL
+app.config['MQTT_BROKER_PORT'] = 1883  # MQTT, unencrypted, unauthenticated
+app.config['MQTT_USERNAME'] = ''  # set the username here if you need authentication for the broker
+app.config['MQTT_PASSWORD'] = ''  # set the password here if the broker demands authentication
+app.config['MQTT_KEEPALIVE'] = 5  # set the time interval for sending a ping to the broker to 5 seconds
+app.config['MQTT_TLS_ENABLED'] = False  # set TLS to disabled for testing purposes
+
+mqtt = Mqtt()
+mqtt.on_connect = on_connect
 
 
 # Returns a list of device IDs
@@ -167,8 +188,8 @@ def rt_action(device_id):
             # Formats and publishes the mqtt topic and payload -> the mqtt publisher
             room_topic = device['room'].lower().replace(" ", "-")
             topic = f"project/home/{room_topic}/{device['id']}/action"
-            payload = jsonlib.dumps(action)
-            mqtt_client.publish(topic, payload)
+            payload = json.dumps(action)
+            mqtt.publish(topic, payload.encode())
 
             return jsonify({'output': "Action applied to device and published via MQTT"}), 200
     return jsonify({'error': "Device not found"}), 404
