@@ -67,20 +67,39 @@ def on_message(client, userdata, msg):
     app.logger.info(f"MQTT Message Received on {msg.topic}")
     try:
         payload = json.loads(msg.payload.decode())
+        app.logger.info(f"Payload: {payload}")
 
         # Extract device_id from topic: expected format project/home/<room>/<device_id>/action
+        device_name = None
         topic_parts = msg.topic.split('/')
         if len(topic_parts) >= 5:
             device_id = topic_parts[3]
-            # Find device name by device_id
-            device_name = [d['name'] for d in data if d['id'] == device_id][0]
-        else:
-            device_name = "Unknown device"
+            if "id" in payload and device_id != payload["id"]:
+                app.logger.error(f"ID mismatch - ID in payload: {payload["id"]}, ID in topic: {device_id}")
+                return
+            for device in data:
+                if device['id'] == device_id:
+                    for key, value in payload.items():
+                        if key == "id":
+                            continue
+                        elif key == "parameters":
+                            for param_key, param_value in payload["parameters"].items():
+                                app.logger.info(f"Setting parameter '{param_key}' to value '{param_value}'")
+                                device['parameters'][param_key] = param_value
+                        else:
+                            app.logger.info(f"Setting parameter '{key}' to value '{value}'")
+                            device[key] = value
+                    device_name = device["name"]
+                    return
+            app.logger.error(f"Device ID {device_id} not found")
 
-        print_device_action(device_name, payload)
+        # print_device_action(
+        #     device_name="Unknown device" if device_name is None else device_name,
+        #     action_payload=payload
+        # )
 
-    except Exception as e:
-        app.logger.exception("Error decoding payload")
+    except UnicodeError as e:
+        app.logger.exception(f"Error decoding payload: {e.reason}")
 
 
 # Returns a list of device IDs

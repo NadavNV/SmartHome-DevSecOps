@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dc35ef9c-e928-47c6-b8ab-8651ffc1f7af" name="Changes" comment="Changed QoS of published messages to 2">
+    <list default="true" id="dc35ef9c-e928-47c6-b8ab-8651ffc1f7af" name="Changes" comment="Changed update and action endpoints to only receive the fields that need to change instead of the full device object">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/main.py" afterDir="false" />
     </list>
@@ -31,17 +31,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/yarde/PycharmProjects/Smartshouse&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/yarde/PycharmProjects/Smartshouse"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\yarde\PycharmProjects\Smartshouse" />
@@ -95,7 +95,15 @@
       <option name="project" value="LOCAL" />
       <updated>1750448699638</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Changed update and action endpoints to only receive the fields that need to change instead of the full device object">
+      <option name="closed" value="true" />
+      <created>1750511763906</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1750511763906</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -104,6 +112,7 @@
     <MESSAGE value="Fixed mqtt functions to decorators" />
     <MESSAGE value="Fixed sending the Flask app to the MQTT constructor" />
     <MESSAGE value="Changed QoS of published messages to 2" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed QoS of published messages to 2" />
+    <MESSAGE value="Changed update and action endpoints to only receive the fields that need to change instead of the full device object" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed update and action endpoints to only receive the fields that need to change instead of the full device object" />
   </component>
 </project>
