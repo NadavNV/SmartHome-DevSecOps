@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dc35ef9c-e928-47c6-b8ab-8651ffc1f7af" name="Changes" comment="Fixed sending the Flask app to the MQTT constructor">
+    <list default="true" id="dc35ef9c-e928-47c6-b8ab-8651ffc1f7af" name="Changes" comment="Changed QoS of published messages to 2">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/main.py" afterDir="false" />
     </list>
@@ -87,7 +87,15 @@
       <option name="project" value="LOCAL" />
       <updated>1750448260347</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Changed QoS of published messages to 2">
+      <option name="closed" value="true" />
+      <created>1750448699638</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1750448699638</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -95,6 +103,7 @@
     <MESSAGE value="Replaced paho with Flask-MQTT" />
     <MESSAGE value="Fixed mqtt functions to decorators" />
     <MESSAGE value="Fixed sending the Flask app to the MQTT constructor" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed sending the Flask app to the MQTT constructor" />
+    <MESSAGE value="Changed QoS of published messages to 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed QoS of published messages to 2" />
   </component>
 </project>

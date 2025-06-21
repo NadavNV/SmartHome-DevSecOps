@@ -1,19 +1,16 @@
 from flask import Flask, jsonify, request
 from flask_mqtt import Mqtt
 import json
-
-# import paho.mqtt.client as mqtt
-# import threading
+import atexit
 
 # Setting up the MQTT client
 BROKER_URL = "test.mosquitto.org"
-# mqtt_client = mqtt.Client("FlaskDevicePublisher")
-# mqtt_client.connect(broker)
+BROKER_PORT = 1883  # MQTT, unencrypted, unauthenticated
 
 # Temporary local json -> stand in for a future database
-file_name = r"./devices.json"
+DATA_FILE_NAME = r"./devices.json"
 
-with open(file_name, mode="r", encoding="utf-8") as read_file:
+with open(DATA_FILE_NAME, mode="r", encoding="utf-8") as read_file:
     data = json.load(read_file)
 
 
@@ -28,20 +25,6 @@ def print_device_action(device_name, action_payload, prefix=""):
                 print_device_action(device_name, value, prefix=f"{prefix}{key} ")
         else:
             app.logger.info(f"{device_name} {prefix}{key} set to {value}")
-
-
-# Launches the mqtt subscriber in an infinite loop on a different thread
-# def mqtt_subscriber_thread():
-#     print("MQTT subscriber thread started", flush=True)
-#     sub_client = mqtt.Client()
-#     sub_client.on_message = on_message
-#     sub_client.connect("test.mosquitto.org")
-#     sub_client.subscribe("project/home/#")
-#     sub_client.loop_forever()
-
-
-# Start subscriber in background
-# threading.Thread(target=mqtt_subscriber_thread, daemon=True).start()
 
 
 # Validates that the request data contains all the required fields
@@ -63,7 +46,7 @@ def check_id(device_id):
 
 app = Flask(__name__)
 app.config['MQTT_BROKER_URL'] = BROKER_URL
-app.config['MQTT_BROKER_PORT'] = 1883  # MQTT, unencrypted, unauthenticated
+app.config['MQTT_BROKER_PORT'] = BROKER_PORT
 app.config['MQTT_USERNAME'] = ''  # set the username here if you need authentication for the broker
 app.config['MQTT_PASSWORD'] = ''  # set the password here if the broker demands authentication
 app.config['MQTT_KEEPALIVE'] = 5  # set the time interval for sending a ping to the broker to 5 seconds
@@ -82,10 +65,8 @@ def on_connect(client, userdata, flags, rc):
 @mqtt.on_message()
 def on_message(client, userdata, msg):
     app.logger.info(f"MQTT Message Received on {msg.topic}")
-    # print(f"\n📡 MQTT Message Received on {msg.topic}")
     try:
         payload = json.loads(msg.payload.decode())
-        # print(f"Full Action Payload: {payload}")
 
         # Extract device_id from topic: expected format project/home/<room>/<device_id>/action
         topic_parts = msg.topic.split('/')
@@ -100,7 +81,6 @@ def on_message(client, userdata, msg):
 
     except Exception as e:
         app.logger.exception("Error decoding payload")
-        # print(f"Error decoding payload: {e}")
 
 
 # Returns a list of device IDs
@@ -153,38 +133,28 @@ def delete_device(device_id):
 @app.put("/api/devices/<device_id>")
 def update_device(device_id):
     updated_device = request.json
-    if device_id != updated_device["id"]:
-        return jsonify({'error': "ID mismatch"}), 400
-    if validate_device_data(updated_device):
-        for i in range(len(data)):
-            if device_id == data[i]["id"]:
-                data[i] = updated_device
-                return jsonify({'output': "Device updated successfully"}), 200
-        return jsonify({'error': "Device not found"}), 404
-    return jsonify({'error': 'Missing required field'}), 400
+    for i in range(len(data)):
+        if device_id == data[i]["id"]:
+            app.logger.info(f"Updating device {device_id}")
+            for key, value in updated_device.items():
+                app.logger.info(f"Setting parameter '{key}' to value '{value}'")
+                data[i][key] = updated_device[key]
+            return jsonify({'output': "Device updated successfully"}), 200
+    return jsonify({'error': "Device not found"}), 404
 
 
-# Sends a real time action to one of the devices
+# Sends a real time action to one of the devices.
+# The request's JSON contains the parameters to update
+# and their new values.
 @app.post("/api/devices/<device_id>/action")
 def rt_action(device_id):
     action = request.json
     for device in data:
         if device["id"] == device_id:
-            for key in action:
-                if key == "parameters":
-                    if isinstance(action["parameters"], dict):
-                        for param_key, param_value in action["parameters"].items():
-                            if param_key in device["parameters"]:
-                                device["parameters"][param_key] = param_value
-                            else:
-                                return jsonify({'error': f"Invalid parameter: '{param_key}'"}), 400
-                    else:
-                        return jsonify({'error': "'parameters' must be a dictionary"}), 400
-                elif key != "id" and "type" and "room" and "name":
-                    if key in device:
-                        device[key] = action[key]
-                    else:
-                        return jsonify({'error': f"Invalid field: '{key}'"}), 400
+            app.logger.info(f"Device action {device_id}")
+            for key, value in action.items():
+                app.logger.info(f"Setting parameter '{key}' to value '{value}'")
+                device["parameters"][key] = value
 
             # Formats and publishes the mqtt topic and payload -> the mqtt publisher
             room_topic = device['room'].lower().replace(" ", "-")
@@ -206,6 +176,13 @@ def add_header(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
+
+# Function to run when shutting down the server
+def on_shutdown():
+    app.logger.info("Shutting down")
+
+
+atexit.register(on_shutdown)
 
 # GET /api/devices: Get a list of all smart devices with their status.
 # POST /api/devices: Register a new smart device (requires device_id, type, and location in payload).
